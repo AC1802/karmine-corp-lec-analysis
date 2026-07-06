@@ -1,27 +1,36 @@
--- Nombre total de games jouées par Karmine Corp
-SELECT COUNT(gameid) AS total_games_played
+-- Kills moyens, deaths moyens, assists moyens de chaque joueur
+SELECT playername, 
+	ROUND(AVG(kills), 1) AS avg_kills, 
+	ROUND(AVG(deaths), 1) AS avg_deaths, 
+	ROUND(AVG(assists), 1) AS avg_assists
 FROM lol_matches_2025
-WHERE teamname = 'Karmine Corp' AND position = 'team' AND league = 'LEC';
+WHERE teamname = 'Karmine Corp' AND position != 'team' AND league = 'LEC'
+GROUP BY playername;
 
--- Nombre de victoires et défaites
+-- KDA moyen de chaque joueur
+SELECT playername, 
+	ROUND(AVG((kills + assists) * 1.0 / NULLIF(deaths, 0)), 1) AS avg_kda
+FROM lol_matches_2025
+WHERE teamname = 'Karmine Corp' AND position != 'team' AND league = 'LEC'
+GROUP BY playername;
+
+-- Gold moyen, cs moyen, dégâts moyens de chaque joueur
+SELECT playername, 
+	ROUND(AVG(totalgold)) AS avg_total_gold, 
+	ROUND(AVG("total cs")) AS avg_total_cs, 
+	ROUND(AVG(damagetochampions)) AS avg_total_damage   
+FROM lol_matches_2025
+WHERE teamname = 'Karmine Corp' AND position != 'team' AND league = 'LEC'
+GROUP BY playername;
+
+CREATE VIEW v_kc_overview AS
 SELECT COUNT(gameid) AS total_games_played,
 	SUM(result) AS victories, 
-	COUNT(gameid) - SUM(result) AS defeats
+	COUNT(gameid) - SUM(result) AS defeats,
+	ROUND(AVG(result) * 100, 1) AS winrate,
+	ROUND(AVG(gamelength) / 60, 1) AS avg_gamelength,
+	SUM(result) - (COUNT(gameid) - SUM(result)) AS diff_victories_defeats
 FROM lol_matches_2025
-WHERE teamname = 'Karmine Corp' AND position = 'team' AND league = 'LEC';
-
--- Winrate global
-SELECT CONCAT(ROUND(AVG(result) * 100, 1), ' %') AS avg_winrate
-FROM lol_matches_2025
-WHERE teamname = 'Karmine Corp' AND position = 'team' AND league = 'LEC';
-
--- Temps moyen des games
-SELECT CONCAT(ROUND(AVG(gamelength / 60), 1), ' min') AS avg_gamelength
-FROM lol_matches_2025
-WHERE teamname = 'Karmine Corp' AND position = 'team' AND league = 'LEC';
-
--- Écart entre victoires et défaites
-SELECT SUM(result) AS victories, COUNT(gameid) - SUM(result) AS defeats,
-	CONCAT(SUM(result) - (COUNT(gameid) - SUM(result)), ' games') AS diff_victories_defeats
-FROM lol_matches_2025 
-WHERE teamname = 'Karmine Corp' AND position = 'team' AND league = 'LEC';
+WHERE teamname = 'Karmine Corp' 
+	AND position = 'team' 
+	AND league = 'LEC';

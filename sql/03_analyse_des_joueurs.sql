@@ -22,3 +22,18 @@ SELECT playername,
 FROM lol_matches_2025
 WHERE teamname = 'Karmine Corp' AND position != 'team' AND league = 'LEC'
 GROUP BY playername;
+
+CREATE VIEW kc_player_stats AS
+SELECT playername,
+	ROUND(AVG(kills), 1) AS avg_kills, 
+	ROUND(AVG(deaths), 1) AS avg_deaths, 
+	ROUND(AVG(assists), 1) AS avg_assists,
+	ROUND(AVG((kills + assists) * 1.0 / NULLIF(deaths, 0)), 1) AS avg_kda,
+	ROUND(AVG(totalgold)) AS avg_total_gold, 
+	ROUND(AVG("total cs")) AS avg_total_cs, 
+	ROUND(AVG(damagetochampions)) AS avg_total_damage
+FROM lol_matches_2025
+WHERE teamname = 'Karmine Corp'
+	AND position != 'team'
+	AND league = 'LEC'
+GROUP BY playername;
